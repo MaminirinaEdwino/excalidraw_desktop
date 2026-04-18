@@ -2,14 +2,37 @@ package main
 
 import (
 	"embed"
+	"encoding/base64"
+	"fmt"
 	"net/http"
+	"os"
+	"strings"
 
 	webview "github.com/webview/webview_go"
 )
 
 //go:embed ui-dist/*
 var assets embed.FS
+func SaveImage(base64Str string) {
+    // 1. Retirer le préfixe "data:image/png;base64,"
+    i := strings.Index(base64Str, ",")
+    if i == -1 {
+        return
+    }
+    rawStr := base64Str[i+1:]
 
+    // 2. Décoder la base64
+    data, err := base64.StdEncoding.DecodeString(rawStr)
+    if err != nil {
+        panic(err)
+    }
+
+    // 3. Sauvegarder sur le disque (dans le dossier de ton projet e-learning par exemple)
+    err = os.WriteFile("export_excalidraw.png", data, 0644)
+    if err != nil {
+        panic(err)
+    }
+}
 func main() {
 	debug := true
 	w := webview.New(debug)
@@ -24,7 +47,10 @@ func main() {
             fs.ServeHTTP(w, r)
         }))
 	}()
-	
+	w.Bind("saveImageToGo", func (data string){
+		SaveImage(data)
+		fmt.Println(data)
+	})
 	w.Navigate("http://localhost:8080")
 	w.Run()
 
