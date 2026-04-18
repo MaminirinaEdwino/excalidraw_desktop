@@ -13,7 +13,7 @@ import (
 
 //go:embed ui-dist/*
 var assets embed.FS
-func SaveImage(base64Str string) {
+func SaveImage(base64Str string, svg64 string) {
     // 1. Retirer le préfixe "data:image/png;base64,"
     i := strings.Index(base64Str, ",")
     if i == -1 {
@@ -32,6 +32,7 @@ func SaveImage(base64Str string) {
     if err != nil {
         panic(err)
     }
+	err = os.WriteFile("export_excalidraw.svg",[]byte(svg64), 0644)
 }
 func main() {
 	debug := true
@@ -47,9 +48,9 @@ func main() {
             fs.ServeHTTP(w, r)
         }))
 	}()
-	w.Bind("saveImageToGo", func (data string){
-		SaveImage(data)
-		fmt.Println(data)
+	w.Bind("saveImageToGo", func (data string, svg string){
+		SaveImage(data, svg)
+		fmt.Println(svg)
 	})
 	w.Navigate("http://localhost:8080")
 	w.Run()

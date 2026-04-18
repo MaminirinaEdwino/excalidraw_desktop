@@ -1,5 +1,5 @@
 import './App.css';
-import { Excalidraw, exportToCanvas } from "@excalidraw/excalidraw";
+import { Excalidraw, exportToCanvas, exportToSvg } from "@excalidraw/excalidraw";
 import "@excalidraw/excalidraw/index.css";
 import { useState } from 'react';
 
@@ -24,9 +24,14 @@ function App() {
       appState,
       files,
     });
-
+    const svg = await exportToSvg({
+      elements,
+      appState,
+      files,
+    })
     const base64 = canvas.toDataURL();
-    window.saveImageToGo(base64); // Appel vers votre backend Go
+    const stringSvg = new XMLSerializer().serializeToString(svg)
+    window.saveImageToGo(base64, stringSvg); // Appel vers votre backend Go
   };
   return (
     <>
@@ -38,7 +43,7 @@ function App() {
               onClick={handleCustomExport}
               className="sidebar-trigger default-sidebar-trigger"
             >
-              png
+              Save Image
             </button>
           )} />
       </div>
